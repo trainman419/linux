@@ -1458,6 +1458,10 @@ S: 1668 California St.
 S: Mountain View, California 94041
 S: USA
 
+N: Austin Hendrix
+E: ahendrix@willowgarage.com
+D: Novatek Touchscreen Support
+
 N: Benjamin Herrenschmidt
 E: benh@kernel.crashing.org
 D: Various parts of PPC/PPC64 & PowerMac
