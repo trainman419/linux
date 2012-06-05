@@ -802,13 +802,14 @@ struct inode {
 		unsigned int __i_nlink;
 	};
 	dev_t			i_rdev;
+	loff_t			i_size;
 	struct timespec		i_atime;
 	struct timespec		i_mtime;
 	struct timespec		i_ctime;
 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
 	unsigned short          i_bytes;
+	unsigned int		i_blkbits;
 	blkcnt_t		i_blocks;
-	loff_t			i_size;
 
 #ifdef __NEED_I_SIZE_ORDERED
 	seqcount_t		i_size_seqcount;
@@ -828,9 +829,8 @@ struct inode {
 		struct list_head	i_dentry;
 		struct rcu_head		i_rcu;
 	};
-	atomic_t		i_count;
-	unsigned int		i_blkbits;
 	u64			i_version;
+	atomic_t		i_count;
 	atomic_t		i_dio_count;
 	atomic_t		i_writecount;
 	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
@@ -1692,6 +1692,7 @@ struct inode_operations {
 	int (*removexattr) (struct dentry *, const char *);
 	int (*fiemap)(struct inode *, struct fiemap_extent_info *, u64 start,
 		      u64 len);
+	int (*update_time)(struct inode *, struct timespec *, int);
 } ____cacheline_aligned;
 
 struct seq_file;
@@ -1849,6 +1850,13 @@ static inline void inode_inc_iversion(struct inode *inode)
        inode->i_version++;
        spin_unlock(&inode->i_lock);
 }
+
+enum file_time_flags {
+	S_ATIME = 1,
+	S_MTIME = 2,
+	S_CTIME = 4,
+	S_VERSION = 8,
+};
 
 extern void touch_atime(struct path *);
 static inline void file_accessed(struct file *file)
@@ -2583,7 +2591,7 @@ extern int inode_change_ok(const struct inode *, struct iattr *);
 extern int inode_newsize_ok(const struct inode *, loff_t offset);
 extern void setattr_copy(struct inode *inode, const struct iattr *attr);
 
-extern void file_update_time(struct file *file);
+extern int file_update_time(struct file *file);
 
 extern int generic_show_options(struct seq_file *m, struct dentry *root);
 extern void save_mount_options(struct super_block *sb, char *options);
